@@ -1,0 +1,17 @@
+package controllers
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+func Printer(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"message": "pong",
+	})
+}
+
+func User(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"message": "pong",
+	})
+}

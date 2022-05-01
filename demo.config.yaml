@@ -1,0 +1,20 @@
+conf:
+  cache_type: mysql
+mysql:
+  host: localhost
+  port: 3306
+  user: root
+  password:
+  database:
+cos:
+  appid:
+  bucket:
+  region:
+secret:
+  secret_id:
+  secret_key:
+redis:
+  host: localhost
+  port: 6379
+  password:
+  db: 0
