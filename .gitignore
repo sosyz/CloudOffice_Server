@@ -1,2 +1,10 @@
+# idea配置
 .idea/
+
+# 编译文件
+main
+
+# 敏感信息文件
 config.yaml
+scf_bootstrap
+main.zip

@@ -1,0 +1,19 @@
+#!/bin/bash
+export DB_HOST=
+export DB_PORT=3306
+export DB_USER=root
+export DB_PASSWORD=
+export DB_DATABASE=
+export DB_DIR=/tmp/data.db
+export SECRET_ID=AKIDdDDDDDDDDDDDDDDDDDDD
+export SECRET_KEY=GG2cy6y3tDDDDDDDDDDDDDDDDDDD
+export COS_APPID=123123123
+export COS_BUCKET=backname-123123123
+export COS_REGION=ap-beijing
+export WECHAT_APPID=wx9f8f8f8f8f8f8f8f
+export WECHAT_SECRET=
+export CACHE_TYPE=mysql
+export DATABASE_TYPE=mysql
+export NODE=1
+
+./main
