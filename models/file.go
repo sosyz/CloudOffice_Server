@@ -1,57 +1,67 @@
 package models
 
-import "sonui.cn/cloudprint/pkg/utils"
+import (
+	"sonui.cn/cloudprint/pkg/conf"
+	"sonui.cn/cloudprint/pkg/utils"
+	"time"
+)
 
 // File 文件
 type File struct {
 	// 表字段
-	Fid    int64  `gorm:"primary_key;"`
-	Name   string `gorm:"type:varchar(100);not null"`
-	Path   string `gorm:"type:varchar(255);not null"`
-	Size   uint64 `gorm:"type:bigint;not null"`
-	Status uint8  `gorm:"type:tinyint;default:0"`
-	// 外键连接到User.Id
-	UserId  string `gorm:"column:user_id;size:32;not null;index:idx_user_id" json:"user_id"`
-	ForUser User   `gorm:"association_foreignkey:ID"`
+	Fid        int64     `gorm:"primary_key;"`
+	Name       string    `gorm:"type:varchar(100);not null"`
+	Path       string    `gorm:"type:varchar(255);not null"`
+	Size       uint64    `gorm:"type:bigint;not null"`
+	Status     uint8     `gorm:"type:tinyint;default:0"`
+	Info       string    `gorm:"type:varchar(255);default:'{}'"`
+	CreateTime time.Time `gorm:"not null"`
 }
 
+const (
+	// FileStatusUpload 上传中
+	FileStatusUpload = iota
+	// FileStatusUploadCompacter 上传完成
+	FileStatusUploadCompacter
+	// FileStatusInfoOk 信息获取完成
+	FileStatusInfoOk
+	// FileStatusPrinting 打印中
+	FileStatusPrinting
+	// FileStatusPrinted 打印完成
+	FileStatusPrinted
+	// FileStatusError 打印错误
+	FileStatusError
+)
+
+// Create 创建文件记录
 func (file *File) Create() error {
-	tx := DB.Begin()
+	file.Status = FileStatusUpload
 
-	if err := tx.Create(file).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-	return tx.Commit().Error
-}
-
-func (file *File) CreatFid() {
-	// 生成节点实例
-	node, err := utils.NewWorker(1)
+	node, err := utils.NewWorker(conf.Conf.Config.Node)
 	if err != nil {
 		panic(err)
 	}
 	file.Fid = node.GetId()
-}
 
-func (file *File) Update() error {
-	tx := DB.Begin()
-
-	if err := tx.Model(&file).Update(file).Error; err != nil {
-		tx.Rollback()
+	if err := DB.Create(file).Error; err != nil {
 		return err
 	}
-	return tx.Commit().Error
+	return nil
+}
+
+// Save 保存信息
+func (file *File) Save() error {
+	if err := DB.Model(&file).Update(file).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func (file *File) Delete() error {
-	tx := DB.Begin()
-
-	if err := tx.Model(&file).Delete(file).Error; err != nil {
-		tx.Rollback()
+	if err := DB.Delete(file).Error; err != nil {
 		return err
 	}
-	return tx.Commit().Error
+	return nil
 }
 
 func (file *File) Find() error {
