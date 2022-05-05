@@ -62,11 +62,11 @@ type config struct {
 }
 
 var Conf *config
-var ConfType string
+var Type string
 
 func InitConfig(path string) error {
 	Conf = &config{}
-	if ConfType == "Yaml" {
+	if Type == "Yaml" {
 		var err error
 		var data []byte
 
@@ -83,7 +83,7 @@ func InitConfig(path string) error {
 			return err
 		}
 		return nil
-	} else if ConfType == "ENV" {
+	} else if Type == "ENV" {
 		return initFromEnv()
 	}
 	return nil
