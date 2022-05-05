@@ -48,7 +48,7 @@ type conf struct {
 	CacheType    string `yaml:"cache_type"`
 	DatabaseType string `yaml:"database_type"`
 	Node         int64  `yaml:"node"`
-	Port         string `yaml:"port"`
+	Listen       string `yaml:"listen"`
 }
 
 // 配置
@@ -90,7 +90,7 @@ func InitConfig(path string) error {
 }
 
 func initFromEnv() error {
-	Conf.Db.Host = utils.GetEnvDefault("DB_HOST", "")
+	Conf.Db.Host = utils.GetEnvDefault("DB_HOST", "127.0.0.1")
 	Conf.Db.Port, _ = strconv.Atoi(utils.GetEnvDefault("DB_PORT", "3306"))
 	Conf.Db.User = utils.GetEnvDefault("DB_USER", "")
 	Conf.Db.Password = utils.GetEnvDefault("DB_PASSWORD", "")
@@ -110,6 +110,6 @@ func initFromEnv() error {
 	Conf.Config.CacheType = utils.GetEnvDefault("CACHE_TYPE", "")
 	Conf.Config.DatabaseType = utils.GetEnvDefault("DATABASE_TYPE", "")
 	Conf.Config.Node, _ = strconv.ParseInt(utils.GetEnvDefault("NODE", "0"), 10, 64)
-	Conf.Config.Port = utils.GetEnvDefault("RUN_PORT", "")
+	Conf.Config.Listen = utils.GetEnvDefault("RUN_LISTEN", "0.0.0.0:9000")
 	return nil
 }
