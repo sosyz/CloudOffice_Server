@@ -8,7 +8,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"sonui.cn/cloudprint/pkg/utils"
+	"sonui.cn/cloudprint/pkg/conf"
 )
 
 // DB 数据库链接单例
@@ -22,17 +22,17 @@ func Init() {
 		err error
 	)
 
-	dbType := utils.GetEnvDefault("database", "DB_TYPE")
+	dbType := conf.Conf.Config.DatabaseType
 	if dbType == "UNSET" {
-		db, err = gorm.Open("sqlite3", utils.GetEnvDefault("DBFile_PATH", "/tmp"))
+		db, err = gorm.Open("sqlite3", conf.Conf.Db.Dir)
 	} else {
-		db, err = gorm.Open(utils.GetEnvDefault("DB_TYPE", "mysql"), fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
-			utils.GetEnvDefault("DB_USER", "root"),
-			utils.GetEnvDefault("DB_PASSWORD", "root"),
-			utils.GetEnvDefault("DB_HOST", "127.0.0.1"),
-			utils.GetEnvDefault("DB_NAME", "cloudprint"),
-		))
-
+		db, err = gorm.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+			conf.Conf.Db.User,
+			conf.Conf.Db.Password,
+			conf.Conf.Db.Host,
+			conf.Conf.Db.Port,
+			conf.Conf.Db.Database),
+		)
 	}
 	if err != nil {
 		panic(fmt.Sprintf("models.init err: %v", err))
@@ -49,8 +49,20 @@ func Init() {
 	//超时
 	db.DB().SetConnMaxLifetime(time.Second * 30)
 
-	DB = db
+	// 检测表并创建
+	if !db.HasTable(&User{}) {
+		db.CreateTable(&User{})
+	}
+	if !db.HasTable(&File{}) {
+		db.CreateTable(&File{})
+	}
+	if !db.HasTable(&Auth{}) {
+		db.CreateTable(&Auth{})
+	}
+	if !db.HasTable(&Cache{}) && conf.Conf.Config.CacheType == "mysql" {
+		db.CreateTable(&Cache{})
+	}
 
-	//TODO: 迁移数据库功能
-	//migration()
+	db.AutoMigrate(&User{}, &File{}, &Auth{}, &Cache{})
+	DB = db
 }
