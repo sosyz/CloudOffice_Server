@@ -111,8 +111,8 @@ func CreatTmpKey(client *gin.Context) {
 	res, err := c.GetCredential(opt)
 	if err != nil {
 		client.JSON(http.StatusBadRequest, gin.H{
-			"code": 105,
-			"msg":  err,
+			"code":    105,
+			"message": err,
 		})
 	} else {
 		client.JSON(http.StatusBadRequest, gin.H{
@@ -193,17 +193,22 @@ func Login(client *gin.Context) {
 		return
 	}
 
-	// 设置登录信息缓存
-	token := models.Cache{
+	//设置登录信息缓存
+	token := &Token{
+		Session: p.SessionKey,
+		Openid:  p.Openid,
+	}
+
+	cache := models.Cache{
 		Key:      p.SessionKey,
-		Value:    p.Openid,
+		Value:    token,
 		ExpireAt: time.Now().Add(time.Hour * 24 * 365),
 	}
 
-	if err := token.Creat(); err != nil {
+	if err = cache.Create(); err != nil {
 		client.JSON(http.StatusBadRequest, gin.H{
-			"code": 201,
-			"msg":  err,
+			"code":    201,
+			"message": "cache save error",
 		})
 	}
 

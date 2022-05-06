@@ -40,29 +40,28 @@ func TokenHandler() gin.HandlerFunc {
 
 		// 判断token是否过期
 		// 如果不一致，就通过 c.Abort() 方法取消请求的继续进行，从而抛出异常
+		var value = &Token{}
 		cache := models.Cache{
-			Key: token.Session,
+			Key:   token.Session,
+			Value: value,
 		}
 
-		value, err := cache.GetValue()
+		err := cache.GetValue()
+		// 空记录
 		if err != nil {
-			panic(err)
-		}
-
-		ok := value == token.Openid
-		if err != nil {
-			// 无法验证token
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"code": 2,
-				"msg":  "cant verify session",
+				"code": 3,
+				"msg":  "session is invalid",
 			})
 			return
 		}
 
-		if !ok {
+		// 记录不一致
+		if !(value.Openid == token.Openid) {
+			// 无法验证token
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"code": 3,
-				"msg":  "session is invalid",
+				"code": 2,
+				"msg":  "cant verify session",
 			})
 			return
 		}
