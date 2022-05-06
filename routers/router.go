@@ -2,6 +2,7 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"sonui.cn/cloudprint/routers/controllers"
 )
 
@@ -9,6 +10,13 @@ import (
 func InitRouter() *gin.Engine {
 	r := gin.Default()
 	// r.Use(Cors())
+
+	// 服务器状态检测
+	r.GET("/ping", func(context *gin.Context) {
+		context.JSON(http.StatusOK, gin.H{
+			"message": "pong!",
+		})
+	})
 
 	// Session校验
 	r.Use(controllers.TokenHandler())
