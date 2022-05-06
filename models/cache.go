@@ -37,13 +37,6 @@ func (c *Cache) GetValue() error {
 		return err
 	}
 	return nil
-	//fmt.Println(c.Value)
-	//// json解析
-	//if err := json.Unmarshal([]byte(c.Value), v); err != nil {
-	//	return err
-	//}
-	//fmt.Printf("%v\n", v)
-	//return nil
 }
 
 // Delete 删除缓存
