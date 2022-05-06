@@ -1,8 +1,7 @@
 package models
 
 import (
-	"sonui.cn/cloudprint/pkg/conf"
-	"sonui.cn/cloudprint/pkg/utils"
+	"encoding/json"
 	"time"
 )
 
@@ -18,9 +17,24 @@ type File struct {
 	CreateTime time.Time `gorm:"not null"`
 }
 
+// FileInfo 文件信息
+type FileInfo struct {
+	PageNum   int    `json:"pageNum"`
+	Type      int    `json:"type"`      // 纸张类型
+	Copies    int    `json:"copies"`    // 份数
+	Colour    bool   `json:"colour"`    // 是否彩色
+	PrintPage string `json:"printPage"` // 打印范围
+}
+
+func (f *FileInfo) ToJson() string {
+	// json编码
+	value, _ := json.Marshal(f)
+	return string(value)
+}
+
 const (
-	// FileStatusUpload 上传中
-	FileStatusUpload = iota
+	// FileStatusUploadStart 上传中
+	FileStatusUploadStart = iota
 	// FileStatusUploadCompacter 上传完成
 	FileStatusUploadCompacter
 	// FileStatusInfoOk 信息获取完成
@@ -35,14 +49,6 @@ const (
 
 // Create 创建文件记录
 func (file *File) Create() error {
-	file.Status = FileStatusUpload
-
-	node, err := utils.NewWorker(conf.Conf.Config.Node)
-	if err != nil {
-		panic(err)
-	}
-	file.Fid = node.GetId()
-
 	if err := DB.Create(file).Error; err != nil {
 		return err
 	}

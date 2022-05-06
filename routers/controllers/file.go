@@ -4,52 +4,47 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"sonui.cn/cloudprint/models"
-)
-
-const (
-	// Init 上传初始化
-	Init = iota
-
-	// Complete 上传完成
-	Complete
-
-	// FileInfo 文件信息获取完成
-	FileInfo
-
-	// OrderMember 订单成员
-	OrderMember
-
-	// WaitPrint 打印等待
-	WaitPrint
-
-	// Printing 打印中
-	Printing
-
-	// PrintComplete 打印完成
-	PrintComplete
-
-	// PrintError 打印错误
-	PrintError
+	"sonui.cn/cloudprint/pkg/cos"
+	"sonui.cn/cloudprint/pkg/utils"
+	"strconv"
 )
 
 func UploadComplete(c *gin.Context) {
 	var record models.File
-	if err := c.Bind(&record); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if record.Path == "" || record.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "path or name are required"})
-		return
-	}
-
-	record.Status = Complete
-	err := record.Update()
+	var err error
+	record.Fid, err = strconv.ParseInt(c.PostForm("fid"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    100,
-			"message": "Create file record failed",
+			"code":    3,
+			"message": "fid is error",
+		})
+		return
+	}
+	if err = record.Find(); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    202,
+			"message": "fid is error",
+		})
+		return
+	}
+
+	var info models.FileInfo
+	info.PageNum, err = cos.GetFilePagesNum(record.Path)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    107,
+			"message": "get file pageNum error",
+		})
+		return
+	}
+	record.Info = info.ToJson()
+	record.Status = models.FileStatusUploadCompacter
+	err = record.Save()
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    201,
+			"message": "Save file record failed",
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
@@ -57,27 +52,26 @@ func UploadComplete(c *gin.Context) {
 			"message": "ok",
 		})
 	}
-
 }
 
 func UploadStart(c *gin.Context) {
 	var record models.File
-	if err := c.Bind(&record); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	record.Name = c.PostForm("name")
+	record.Path = c.PostForm("path")
+	record.Status = models.FileStatusUploadStart
 
 	if record.Path == "" || record.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "path or name are required"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    3,
+			"message": "option is required",
+		})
 		return
 	}
-	record.CreatFid()
-	record.Status = Init
-	err := record.Create()
-	if err != nil {
+	record.Fid = utils.SnowFlake.GetId()
+	if err := record.Create(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    201,
-			"message": "Create file record failed",
+			"message": "Create file record error",
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
