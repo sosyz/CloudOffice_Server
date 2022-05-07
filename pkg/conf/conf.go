@@ -44,6 +44,7 @@ type secret struct {
 	SecretKey string `yaml:"secret_key"`
 }
 
+// 配置
 type conf struct {
 	CacheType    string `yaml:"cache_type"`
 	DatabaseType string `yaml:"database_type"`
@@ -51,7 +52,13 @@ type conf struct {
 	Listen       string `yaml:"listen"`
 }
 
-// 配置
+// 支付配置
+type pay struct {
+	MchId string `yaml:"mch_id"`
+	Key   string `yaml:"key"`
+}
+
+// 入口
 type config struct {
 	Config conf   `yaml:"conf"`
 	Cos    cos    `yaml:"cos"`
@@ -59,14 +66,16 @@ type config struct {
 	Redis  redis  `yaml:"redis"`
 	Secret secret `yaml:"secret"`
 	Wechat wechat `yaml:"wechat"`
+	Pay    pay    `yaml:"pay"`
 }
 
 var Conf *config
 var Type string
 
 func InitConfig(path string) error {
+	// TODO: 配置转为VIPER库
 	Conf = &config{}
-	if Type == "Yaml" {
+	if Type == "YAML" {
 		var err error
 		var data []byte
 

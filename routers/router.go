@@ -17,6 +17,8 @@ func InitRouter() *gin.Engine {
 			"message": "pong!",
 		})
 	})
+	// 支付回调地址
+	r.POST("/pay/notify", controllers.PayNotify)
 
 	// v1接口
 	v1 := r.Group("/api/v1")
@@ -52,16 +54,16 @@ func InitRouter() *gin.Engine {
 			order.POST("detail", controllers.OrderDetail)
 
 			// 合成订单
-			order.POST("synthesis", controllers.OrderSynthesis)
+			order.POST("merge", controllers.OrderMerge)
 
 			// 取消订单
 			order.POST("cancel", controllers.OrderCancel)
 
 			// 获取订单支付信息
-			order.GET("payInfo", controllers.OrderPayInfo)
+			order.POST("payInfo", controllers.OrderPayInfo)
 
 			// 获取订单支付状态
-			order.GET("payStatus", controllers.OrderPayStatus)
+			order.POST("payStatus", controllers.OrderPayStatus)
 		}
 
 		ws := v1.Group("/wss")
