@@ -29,7 +29,7 @@ func UploadComplete(c *gin.Context) {
 	}
 
 	var info models.FileInfo
-	info.PageNum, err = cos.GetFilePagesNum(record.Path)
+	info.PageNum, err = cos.GetFilePagesNum(record.Path + record.Name)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    107,
@@ -57,7 +57,7 @@ func UploadComplete(c *gin.Context) {
 func UploadStart(c *gin.Context) {
 	var record models.File
 	record.Name = c.PostForm("name")
-	record.Path = c.PostForm("path")
+	record.Path = c.PostForm("openid")
 	record.Status = models.FileStatusUploadStart
 
 	if record.Path == "" || record.Name == "" {
@@ -67,7 +67,12 @@ func UploadStart(c *gin.Context) {
 		})
 		return
 	}
-	record.Fid = utils.SnowFlake.GetId()
+	// 判断path是否以/结尾
+	if record.Path[len(record.Path)-1:] != "/" {
+		record.Path = record.Path + "/"
+	}
+
+	record.Fid = utils.FileSF.GetId()
 	if err := record.Create(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    201,
@@ -75,8 +80,8 @@ func UploadStart(c *gin.Context) {
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
-			"code":    0,
-			"message": "ok",
+			"code": 0,
+			"fid":  record.Fid,
 		})
 	}
 }

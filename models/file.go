@@ -15,6 +15,7 @@ type File struct {
 	Status     uint8     `gorm:"type:tinyint;default:0"`
 	Info       string    `gorm:"type:varchar(255);default:'{}'"`
 	CreateTime time.Time `gorm:"not null"`
+	UpdateTime time.Time `gorm:"not null"`
 }
 
 // FileInfo 文件信息
@@ -49,6 +50,8 @@ const (
 
 // Create 创建文件记录
 func (file *File) Create() error {
+	file.CreateTime = time.Now()
+	file.UpdateTime = time.Now()
 	if err := DB.Create(file).Error; err != nil {
 		return err
 	}
@@ -57,6 +60,7 @@ func (file *File) Create() error {
 
 // Save 保存信息
 func (file *File) Save() error {
+	file.UpdateTime = time.Now()
 	if err := DB.Model(&file).Update(file).Error; err != nil {
 		return err
 	}
@@ -78,4 +82,11 @@ func (file *File) List() ([]File, error) {
 	var files []File
 	err := DB.Model(file).Where(file).Find(&files).Error
 	return files, err
+}
+
+func (file *File) Exist() bool {
+	if err := DB.Model(&file).Where("fid = ?", file.Fid).First(&file).Error; err != nil {
+		return false
+	}
+	return true
 }
