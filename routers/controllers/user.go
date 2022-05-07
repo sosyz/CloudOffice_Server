@@ -6,11 +6,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sonui.cn/cloudprint/models"
+	"sonui.cn/cloudprint/pkg/conf"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	sts "github.com/tencentyun/qcloud-cos-sts-sdk/go"
-	"sonui.cn/cloudprint/pkg/utils"
 )
 
 // TODO: 目前还是太乱细分以后再做吧
@@ -29,6 +29,7 @@ type LoginObj struct {
 
 // CreatTmpKey 获取临时密钥
 func CreatTmpKey(client *gin.Context) {
+	// 存在安全隐患 对外来参数可能有伪造 _key
 	var token Token
 	_ = client.Bind(&token) // 前头验证过了这里忽略
 
@@ -36,8 +37,8 @@ func CreatTmpKey(client *gin.Context) {
 	//data := []byte(form.Openid)
 	//has := md5.Sum(data)
 	//form.Openid = fmt.Sprintf("%x", has) //将[]byte转成16进制
-	SecretId := utils.GetEnvDefault("SecretId", "")
-	SecretKey := utils.GetEnvDefault("SecretKey", "")
+	SecretId := conf.Conf.Secret.SecretId
+	SecretKey := conf.Conf.Secret.SecretKey
 	if SecretId == "" || SecretKey == "" {
 		client.JSON(http.StatusBadRequest, gin.H{
 			"code":    1,
@@ -53,7 +54,7 @@ func CreatTmpKey(client *gin.Context) {
 	)
 
 	// 获取存储桶信息
-	CosBucketRegion := utils.GetEnvDefault("CosBucket", "")
+	CosBucketRegion := conf.Conf.Cos.Region
 	if CosBucketRegion == "" {
 		client.JSON(http.StatusBadRequest, gin.H{
 			"code":    1,
@@ -62,7 +63,7 @@ func CreatTmpKey(client *gin.Context) {
 		return
 	}
 
-	CosAppid := utils.GetEnvDefault("CosAppid", "")
+	CosAppid := conf.Conf.Cos.Appid
 	if CosAppid == "" {
 		client.JSON(http.StatusBadRequest, gin.H{
 			"code":    1,
@@ -71,11 +72,26 @@ func CreatTmpKey(client *gin.Context) {
 		return
 	}
 
-	CosBucketName := utils.GetEnvDefault("CosBucketName", "")
+	CosBucketName := conf.Conf.Cos.Bucket
 	if CosBucketName == "" {
 		client.JSON(http.StatusBadRequest, gin.H{
 			"code":    1,
 			"message": "CosBucketName is empty",
+		})
+		return
+	}
+
+	// 查询缓存
+	var value = &sts.CredentialResult{}
+	cache := models.Cache{
+		Key:   token.Openid + "_tmpKey",
+		Value: value,
+	}
+
+	if err := cache.GetValue(); err == nil {
+		client.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"data": cache.Value,
 		})
 		return
 	}
@@ -109,13 +125,24 @@ func CreatTmpKey(client *gin.Context) {
 
 	// 请求临时密钥
 	res, err := c.GetCredential(opt)
+
 	if err != nil {
 		client.JSON(http.StatusBadRequest, gin.H{
 			"code":    105,
 			"message": err,
 		})
 	} else {
-		client.JSON(http.StatusBadRequest, gin.H{
+		// 缓存密钥
+		// 时间戳转时间
+		timeAt := time.Unix(int64(res.ExpiredTime), 0)
+		cache := models.Cache{
+			Key:      token.Openid + "_tmpKey",
+			Value:    res,
+			ExpireAt: timeAt,
+		}
+		_ = cache.Create()
+
+		client.JSON(http.StatusOK, gin.H{
 			"code": 0,
 			"data": res,
 		})
@@ -141,8 +168,8 @@ func Login(client *gin.Context) {
 	}
 
 	// 获取配置信息
-	WXAppID := utils.GetEnvDefault("WXAppID", "")
-	WXAppSecret := utils.GetEnvDefault("WXAppSecret", "")
+	WXAppID := conf.Conf.Wechat.Appid
+	WXAppSecret := conf.Conf.Wechat.Secret
 
 	if WXAppID == "" || WXAppSecret == "" {
 		client.JSON(http.StatusBadRequest, gin.H{
