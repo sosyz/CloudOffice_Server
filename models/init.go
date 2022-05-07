@@ -36,8 +36,6 @@ func Init() {
 
 	//超时
 	db.DB().SetConnMaxLifetime(time.Second * 30)
-
-	fmt.Printf("models.init success, user exist: %v\n", db.HasTable(&User{}))
 	// 检测表并创建
 	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
 		return "print_" + defaultTableName
@@ -56,8 +54,11 @@ func Init() {
 	if !db.HasTable(&Cache{}) && conf.Conf.Config.CacheType == "db" {
 		db.CreateTable(&Cache{})
 	}
+	if !db.HasTable(&Order{}) {
+		db.CreateTable(&Order{})
+	}
 
 	// 更新结构
-	db.AutoMigrate(&User{}, &File{}, &Auth{}, &Cache{})
+	db.AutoMigrate(&User{}, &File{}, &Auth{}, &Cache{}, &Order{})
 	DB = db
 }
