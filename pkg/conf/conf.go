@@ -99,26 +99,30 @@ func InitConfig(path string) error {
 }
 
 func initFromEnv() error {
-	Conf.Db.Host = utils.GetEnvDefault("DB_HOST", "127.0.0.1")
-	Conf.Db.Port, _ = strconv.Atoi(utils.GetEnvDefault("DB_PORT", "3306"))
-	Conf.Db.User = utils.GetEnvDefault("DB_USER", "")
-	Conf.Db.Password = utils.GetEnvDefault("DB_PASSWORD", "")
-	Conf.Db.Database = utils.GetEnvDefault("DB_DATABASE", "")
-	Conf.Db.Dir = utils.GetEnvDefault("DB_DIR", "")
-	Conf.Redis.Host = utils.GetEnvDefault("REDIS_HOST", "")
-	Conf.Redis.Port, _ = strconv.Atoi(utils.GetEnvDefault("REDIS_PORT", "0"))
-	Conf.Redis.Db, _ = strconv.Atoi(utils.GetEnvDefault("REDIS_DB", "0"))
-	Conf.Redis.Password = utils.GetEnvDefault("REDIS_PASSWORD", "")
-	Conf.Secret.SecretId = utils.GetEnvDefault("SECRET_ID", "")
-	Conf.Secret.SecretKey = utils.GetEnvDefault("SECRET_KEY", "")
-	Conf.Cos.Appid = utils.GetEnvDefault("COS_APPID", "")
-	Conf.Cos.Bucket = utils.GetEnvDefault("COS_BUCKET", "")
-	Conf.Cos.Region = utils.GetEnvDefault("COS_REGION", "")
-	Conf.Wechat.Appid = utils.GetEnvDefault("WECHAT_APPID", "")
-	Conf.Wechat.Secret = utils.GetEnvDefault("WECHAT_SECRET", "")
-	Conf.Config.CacheType = utils.GetEnvDefault("CACHE_TYPE", "")
-	Conf.Config.DatabaseType = utils.GetEnvDefault("DATABASE_TYPE", "")
-	Conf.Config.Node, _ = strconv.ParseInt(utils.GetEnvDefault("NODE", "0"), 10, 64)
-	Conf.Config.Listen = utils.GetEnvDefault("RUN_LISTEN", "0.0.0.0:9000")
+	// TODO: redis配置读取
+	Conf.Db.Host = utils.GetEnvDefault("db_host", "127.0.0.1")
+	Conf.Db.Port, _ = strconv.Atoi(utils.GetEnvDefault("db_port", "3306"))
+	Conf.Db.User = utils.GetEnvDefault("db_user", "")
+	Conf.Db.Password = utils.GetEnvDefault("db_password", "")
+	Conf.Db.Database = utils.GetEnvDefault("db_database", "")
+
+	Conf.Secret.SecretId = utils.GetEnvDefault("secret_secret_id", "")
+	Conf.Secret.SecretKey = utils.GetEnvDefault("secret_secret_key", "")
+
+	Conf.Cos.Appid = utils.GetEnvDefault("cos_appid", "")
+	Conf.Cos.Bucket = utils.GetEnvDefault("cos_bucket", "")
+	Conf.Cos.Region = utils.GetEnvDefault("cos_region", "")
+
+	Conf.Wechat.Appid = utils.GetEnvDefault("wechat_appid", "")
+	Conf.Wechat.Secret = utils.GetEnvDefault("wechat_secret", "")
+
+	Conf.Config.CacheType = utils.GetEnvDefault("conf_cache_type", "")
+	Conf.Config.DatabaseType = utils.GetEnvDefault("conf_database_type", "")
+	Conf.Config.Node, _ = strconv.ParseInt(utils.GetEnvDefault("conf_node", "0"), 10, 64)
+	Conf.Config.Listen = utils.GetEnvDefault("conf_listen", "0.0.0.0:9000")
+
+	Conf.Pay.MchId = utils.GetEnvDefault("pay_mch_id", "")
+	Conf.Pay.Key = utils.GetEnvDefault("pay_key", "")
+
 	return nil
 }
