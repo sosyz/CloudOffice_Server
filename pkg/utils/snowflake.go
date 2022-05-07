@@ -23,16 +23,25 @@ type Worker struct {
 	number    int64
 }
 
-func NewWorker(workerId int64) (*Worker, error) {
+var FileSF *Worker
+var OrderSF *Worker
+
+func NewWorker(workerId int64) error {
 	if workerId < 0 || workerId > workerMax {
-		return nil, errors.New("worker ID excess of quantity")
+		return errors.New("worker ID excess of quantity")
 	}
-	// 生成一个新节点
-	return &Worker{
+	// 生成新节点
+	FileSF = &Worker{
 		timestamp: 0,
 		workerId:  workerId,
 		number:    0,
-	}, nil
+	}
+	OrderSF = &Worker{
+		timestamp: 0,
+		workerId:  workerId,
+		number:    0,
+	}
+	return nil
 }
 
 func (w *Worker) GetId() int64 {
