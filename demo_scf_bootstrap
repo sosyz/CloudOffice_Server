@@ -1,19 +1,26 @@
 #!/bin/bash
-export DB_HOST=
-export DB_PORT=3306
-export DB_USER=root
-export DB_PASSWORD=
-export DB_DATABASE=
-export DB_DIR=/tmp/data.db
-export SECRET_ID=AKIDdDDDDDDDDDDDDDDDDDDD
-export SECRET_KEY=GG2cy6y3tDDDDDDDDDDDDDDDDDDD
-export COS_APPID=123123123
-export COS_BUCKET=backname-123123123
-export COS_REGION=ap-beijing
-export WECHAT_APPID=wx9f8f8f8f8f8f8f8f
-export WECHAT_SECRET=
-export CACHE_TYPE=mysql
-export DATABASE_TYPE=mysql
-export NODE=1
+export conf_cache_type=db
+export conf_database_type=mysql
+export conf_node=1
+export conf_listen=0.0.0.0:9000
+
+export db_host=192.168.0.5
+export db_port=3306
+export db_user=root
+export db_password=123456
+export db_database=CloudPrinter
+
+export cos_appid=123123123213
+export cos_bucket=test-123123123123
+export cos_region=ap-beijing
+
+export secret_secret_id=AKxxxxxxxxxxxxxxxxxxx
+export secret_secret_key=GG2cxxxxxxxxxxxxxxxxx
+
+export wechat_appid=wxcabcabcabcabcabcabcabc
+export wechat_secret=abcabcabcabcabcabcabcabcabc
+
+export pay_mch_id=123123123123
+export pay_key=abcabcabcabcabc
 
 ./main
