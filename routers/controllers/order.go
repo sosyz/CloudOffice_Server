@@ -38,7 +38,7 @@ func OrderMerge(c *gin.Context) {
 	}
 
 	// 解析文件列表
-	var fids []int64
+	var fids []string
 	err := json.Unmarshal([]byte(req), &fids)
 	if err != nil || len(fids) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -47,12 +47,13 @@ func OrderMerge(c *gin.Context) {
 		})
 		return
 	}
+	fmt.Printf("fids: %v\n", fids)
+	ans := 0
 
-	var ans int
-	var info models.FileInfo
 	// 检查文件是否存在 存在计算页数和
 	for _, fid := range fids {
-		tFile := models.File{Fid: fid}
+		tFid, _ := strconv.ParseInt(fid, 10, 64)
+		tFile := models.File{Fid: tFid}
 		if !tFile.Exist() {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"code":    5,
@@ -61,23 +62,29 @@ func OrderMerge(c *gin.Context) {
 			return // 只要有一个文件不存在，就返回
 		} else {
 			// TODO: 检查文件是否已使用
+			var info models.FileInfo
 			err = json.Unmarshal([]byte(tFile.Info), &info)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{
 					"code":    5,
-					"message": fmt.Sprintf("fileID[%d] info is error", fid),
+					"message": fmt.Sprintf("fileID[%v] info is error", fid),
 				})
 				return
 			}
-			fmt.Printf("fid: %v, PageNum: %+v\n", fid, info.PageNum)
+			fmt.Printf("fid: %v, PageNum: %+v, info:%v\n", tFile.Fid, info.PageNum, tFile.Info)
 			ans += info.PageNum
 		}
 	}
 
 	// 生成订单
+	var fl []int64
+	for _, fid := range fids {
+		tfl, _ := strconv.ParseInt(fid, 10, 64)
+		fl = append(fl, tfl)
+	}
 	order := models.Order{
 		ID:        utils.OrderSF.GetId(),
-		FileList:  fids,
+		FileList:  fl,
 		Status:    models.OrderStatusWaitPay,
 		UserID:    c.PostForm("openid"),
 		TotalFee:  ans * 30,
@@ -95,7 +102,7 @@ func OrderMerge(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    0,
-			"orderID": order.ID,
+			"orderID": strconv.FormatInt(order.ID, 10),
 		})
 	}
 }

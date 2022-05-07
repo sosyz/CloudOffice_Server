@@ -49,7 +49,7 @@ func UploadComplete(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    0,
-			"message": "ok",
+			"pageNum": strconv.Itoa(info.PageNum),
 		})
 	}
 }
@@ -81,7 +81,7 @@ func UploadStart(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"code": 0,
-			"fid":  record.Fid,
+			"fid":  strconv.FormatInt(record.Fid, 10),
 		})
 	}
 }
