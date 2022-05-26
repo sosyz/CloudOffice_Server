@@ -2,7 +2,6 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"sonui.cn/cloudprint/routers/controllers"
 )
 
@@ -13,10 +12,9 @@ func InitRouter() *gin.Engine {
 
 	//服务器状态检测
 	r.GET("/ping", func(context *gin.Context) {
-		context.JSON(http.StatusOK, gin.H{
-			"message": "pong!",
-		})
+		context.String(200, "!pong")
 	})
+
 	// 支付回调地址
 	r.POST("/pay/notify", controllers.PayNotify)
 
@@ -34,6 +32,11 @@ func InitRouter() *gin.Engine {
 
 			// 获取临时密钥
 			user.POST("tmpKey", controllers.CreatTmpKey)
+
+			// 获取账号信息
+			user.GET("info", controllers.GetUserInfo)
+
+			user.POST("set", controllers.SetUserInfo)
 		}
 
 		file := v1.Group("/file")
