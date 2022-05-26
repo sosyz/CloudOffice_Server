@@ -5,16 +5,27 @@ import (
 	"github.com/spf13/viper"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
-var Config config
+var Config *config
+var FileSF *Worker
+var OrderSF *Worker
 
 func init() {
+	// 初始化配置文件
+	Config = &config{}
 	err := ReadConfig()
 	if err != nil {
 		fmt.Println("Read config failed, err:", err)
 	}
+
+	// 初始化雪花
+	// string转为int64
+	node, _ := strconv.ParseInt(Config.Run.Node, 10, 64)
+	FileSF, _ = NewWorker(node)
+	OrderSF, _ = NewWorker(node)
 
 }
 
@@ -32,9 +43,9 @@ func ReadConfig() error {
 		// 从文件读取配置失败 尝试从环境变量获取
 		fmt.Println("Read config from env failed, try to read from env")
 		//设置环境变量名前缀
-		return ReadConfigFromEnv(&Config, "ONLINE_OFFICE", v)
+		return ReadConfigFromEnv(Config, "ONLINE_OFFICE", v)
 	} else {
-		if err := v.Unmarshal(&Config); err != nil {
+		if err := v.Unmarshal(Config); err != nil {
 			return err
 		}
 	}
