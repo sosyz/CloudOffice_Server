@@ -4,22 +4,9 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"net/url"
-	"os"
 	"sort"
 	"strings"
 )
-
-type Tools struct {
-}
-
-// GetEnvDefault 获取系统环境变量
-func GetEnvDefault(key, defVal string) string {
-	val, ex := os.LookupEnv(key)
-	if !ex {
-		return defVal
-	}
-	return val
-}
 
 // PayJsSign PayJs签名算法
 func PayJsSign(order map[string]string, key string) (sign string) {
