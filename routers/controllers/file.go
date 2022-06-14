@@ -4,8 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"sonui.cn/cloudprint/models"
-	"sonui.cn/cloudprint/pkg/cos"
-	"sonui.cn/cloudprint/pkg/utils"
+	"sonui.cn/cloudprint/utils"
 	"strconv"
 )
 
@@ -29,7 +28,7 @@ func UploadComplete(c *gin.Context) {
 	}
 
 	var info models.FileInfo
-	info.PageNum, err = cos.GetFilePagesNum(record.Path + record.Name)
+	info.PageNum, err = utils.GetFilePagesNum(record.Path + record.Name)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    107,

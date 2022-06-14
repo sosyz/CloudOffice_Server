@@ -1,4 +1,4 @@
-package fileTools
+package utils
 
 import (
 	"io"

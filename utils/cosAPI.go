@@ -1,23 +1,22 @@
-package cos
+package utils
 
 import (
 	"context"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"net/http"
 	"net/url"
-	"sonui.cn/cloudprint/pkg/conf"
 	"strconv"
 )
 
 // GetFilePagesNum 通过腾讯云万象能力获取文件页数
 func GetFilePagesNum(path string) (int, error) {
-	u, _ := url.Parse("https://" + conf.Conf.Cos.Bucket + ".cos." + conf.Conf.Cos.Region + ".myqcloud.com")
-	cu, _ := url.Parse("https://" + conf.Conf.Cos.Bucket + ".ci." + conf.Conf.Cos.Region + ".myqcloud.com")
+	u, _ := url.Parse("https://" + Config.QCloud.Bucket + ".cos." + Config.QCloud.Region + ".myqcloud.com")
+	cu, _ := url.Parse("https://" + Config.QCloud.Bucket + ".ci." + Config.QCloud.Region + ".myqcloud.com")
 	b := &cos.BaseURL{BucketURL: u, CIURL: cu}
 	c := cos.NewClient(b, &http.Client{
 		Transport: &cos.AuthorizationTransport{
-			SecretID:  conf.Conf.Secret.SecretId,
-			SecretKey: conf.Conf.Secret.SecretKey,
+			SecretID:  Config.QCloud.SecretId,
+			SecretKey: Config.QCloud.SecretKey,
 		},
 	})
 	opt := &cos.DocPreviewOptions{}
