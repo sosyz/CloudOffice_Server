@@ -27,6 +27,7 @@ type FileInfo struct {
 	PrintPage string `json:"printPage"` // 打印范围
 }
 
+// ToJson 序列化
 func (f *FileInfo) ToJson() string {
 	// json编码
 	value, _ := json.Marshal(f)
@@ -52,13 +53,14 @@ const (
 func (file *File) Create() error {
 	file.CreateTime = time.Now()
 	file.UpdateTime = time.Now()
+
 	if err := DB.Create(file).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-// Save 保存信息
+// Save 保存变动
 func (file *File) Save() error {
 	file.UpdateTime = time.Now()
 	if err := DB.Model(&file).Update(file).Error; err != nil {
@@ -67,6 +69,7 @@ func (file *File) Save() error {
 	return nil
 }
 
+// Delete 删除记录
 func (file *File) Delete() error {
 	if err := DB.Delete(file).Error; err != nil {
 		return err
@@ -74,19 +77,25 @@ func (file *File) Delete() error {
 	return nil
 }
 
+// Find 查找记录
 func (file *File) Find() error {
 	return DB.Model(file).Where(file).First(file).Error
 }
 
-func (file *File) List() ([]File, error) {
-	var files []File
-	err := DB.Model(file).Where(file).Find(&files).Error
-	return files, err
+// Exist 记录是否存在
+func (file *File) Exist() (bool, error) {
+	var tmp File
+	if err := DB.Model(file).Where(file).First(&tmp).Error; err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
-func (file *File) Exist() bool {
-	if err := DB.Model(&file).Where("fid = ?", file.Fid).First(&file).Error; err != nil {
-		return false
+// FileList 获取用户上传的文件列表
+func FileList(userID string) ([]File, error) {
+	var files []File
+	if err := DB.Where("user_id = ?", userID).Find(&files).Error; err != nil {
+		return nil, err
 	}
-	return true
+	return files, nil
 }
