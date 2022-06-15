@@ -43,7 +43,7 @@ func ReadConfig() error {
 		// 从文件读取配置失败 尝试从环境变量获取
 		fmt.Println("Read config from env failed, try to read from env")
 		//设置环境变量名前缀
-		return ReadConfigFromEnv(Config, "ONLINE_OFFICE", v)
+		return ReadConfigFromEnv(Config, "ONLINE_OFFICE")
 	} else {
 		if err := v.Unmarshal(Config); err != nil {
 			return err
@@ -54,7 +54,7 @@ func ReadConfig() error {
 }
 
 // ReadConfigFromEnv 从环境变量读取配置
-func ReadConfigFromEnv(obj interface{}, envPrefix string, v *viper.Viper) error {
+func ReadConfigFromEnv(obj interface{}, envPrefix string) error {
 	objType := reflect.TypeOf(obj)
 	objValue := reflect.ValueOf(obj)
 	if objType.Kind() != reflect.Ptr {
@@ -67,13 +67,12 @@ func ReadConfigFromEnv(obj interface{}, envPrefix string, v *viper.Viper) error 
 		// 判断类型是否属于interface
 		if f.Type.Kind() == reflect.Struct {
 			// 如果是结构体，递归调用 传递指针
-			if err := ReadConfigFromEnv(objValue.Elem().Field(i).Addr().Interface(), strings.ToUpper(envPrefix+"_"+f.Name), v); err != nil {
+			if err := ReadConfigFromEnv(objValue.Elem().Field(i).Addr().Interface(), strings.ToUpper(envPrefix+"_"+f.Name)); err != nil {
 				return err
 			}
 		} else {
-			// 获取环境变量名
+			// 获取环境变量值
 			val := os.Getenv(strings.ToUpper(envPrefix + "_" + f.Name))
-			fmt.Printf("Name: %v, Value: [%v]\n", strings.ToUpper(envPrefix+"_"+f.Name), val)
 			// 修改其值
 			objValue.Elem().Field(i).SetString(val)
 		}
