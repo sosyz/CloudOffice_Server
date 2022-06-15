@@ -35,6 +35,7 @@ type redis struct {
 
 // 配置
 type run struct {
+	Host         string
 	CacheType    string
 	DatabaseType string
 	Node         string
