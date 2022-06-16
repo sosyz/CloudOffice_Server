@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	sts "github.com/tencentyun/qcloud-cos-sts-sdk/go"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"sonui.cn/cloudprint/models"
@@ -24,6 +23,7 @@ func GetUserInfo(openid string) (int, string, *models.User) {
 	return 0, "", &user
 }
 
+// CreatTmpKey 创建临时密钥
 func CreatTmpKey(openid string) (int, string, any) {
 	if utils.Config.QCloud.SecretId == "" || utils.Config.QCloud.SecretKey == "" {
 		return 1, "SecretId or SecretKey is empty", nil
@@ -47,7 +47,7 @@ func CreatTmpKey(openid string) (int, string, any) {
 		Value: value,
 	}
 
-	if err := cache.GetValue(); err == nil {
+	if err := cache.Find(); err == nil {
 		return 0, "", cache.Value
 	}
 
@@ -112,12 +112,7 @@ func Login(code string) (int, string, *vo.TokenVo) {
 		return 101, err.Error(), nil
 	}
 
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-
-		}
-	}(resp.Body)
+	defer utils.HttpClose(resp.Body)
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
