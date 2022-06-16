@@ -31,7 +31,7 @@ func InitRouter() *gin.Engine {
 			user.POST("login", controllers.Login)
 
 			// 获取临时密钥
-			user.POST("tmpKey", controllers.CreatTmpKey)
+			user.GET("tmpKey", controllers.CreatTmpKey)
 
 			// 获取账号信息
 			user.GET("info", controllers.GetUserInfo)

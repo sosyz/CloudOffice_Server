@@ -37,14 +37,15 @@ func GetUserInfo(client *gin.Context) {
 
 // CreatTmpKey 获取临时密钥
 func CreatTmpKey(client *gin.Context) {
-	var body vo.TokenVo
-	_ = client.Bind(&body) // 前头验证过了这里忽略错误
+	// 前头验证过了这里忽略可能出现的错误
+	openid, _ := client.Request.Cookie("openid")
 
 	//openid取其md5
-	data := []byte(body.Openid)
+	data := []byte(openid.Value)
 	has := md5.Sum(data)
-	body.Openid = fmt.Sprintf("%x", has) //将[]byte转成16进制
-	code, err, res := services.CreatTmpKey(body.Openid)
+	//将[]byte转成16进制
+	openid.Value = fmt.Sprintf("%x", has)
+	code, err, res := services.CreatTmpKey(openid.Value)
 
 	if err != "" {
 		client.JSON(
