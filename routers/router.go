@@ -51,7 +51,7 @@ func InitRouter() *gin.Engine {
 		order := v1.Group("/order")
 		{
 			// 获取订单列表
-			order.POST("list", controllers.OrderList)
+			order.GET("list", controllers.OrderList)
 
 			// 获取订单详情
 			order.POST("detail", controllers.OrderDetail)

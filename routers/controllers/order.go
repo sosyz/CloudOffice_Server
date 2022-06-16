@@ -1,23 +1,39 @@
 package controllers
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"sonui.cn/cloudprint/models"
-	"sonui.cn/cloudprint/pkg/conf"
-	"sonui.cn/cloudprint/pkg/utils"
+	"sonui.cn/cloudprint/payjs"
+	"sonui.cn/cloudprint/services"
+	"sonui.cn/cloudprint/utils"
 	"strconv"
 	"time"
 )
 
 func OrderList(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "pong",
-	})
+	// 取cookie
+	userID, err := c.Request.Cookie("openid")
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    3,
+			"message": "openid is required",
+		})
+	}
+	if list, err := services.GetOrderOverviewList(userID.Value); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    5,
+			"message": "get order list error",
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"list": list,
+		})
+	}
+
 }
 
 func OrderDetail(c *gin.Context) {
@@ -54,7 +70,7 @@ func OrderMerge(c *gin.Context) {
 	for _, fid := range fids {
 		tFid, _ := strconv.ParseInt(fid, 10, 64)
 		tFile := models.File{Fid: tFid}
-		if !tFile.Exist() {
+		if ok, err := tFile.Exist(); !ok || err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"code":    5,
 				"message": fmt.Sprintf("fid[%v] is not exist", fid),
@@ -138,26 +154,9 @@ func OrderPayInfo(c *gin.Context) {
 	}
 	fmt.Printf("order: %+v\n", order)
 
+	data := payjs.Create(order.TotalFee, order.ID)
+
 	// 商户号
-	mchId := conf.Conf.Pay.MchId
-	h := md5.New()
-	// 取时间戳
-	t := time.Now().Unix()
-	h.Write([]byte(strconv.FormatInt(t, 10) + "&q^x*9@mLN3#brTTJ"))
-	nonceStr := hex.EncodeToString(h.Sum(nil))
-
-	data := map[string]string{
-		"mchid":        mchId,
-		"total_fee":    strconv.Itoa(order.TotalFee),
-		"out_trade_no": strconv.FormatInt(orderID, 10),
-		"nonceStr":     nonceStr,
-	}
-
-	// PAYJS通信密钥
-	key := conf.Conf.Pay.Key
-	sign := utils.PayJsSign(data, key)
-	data["sign"] = sign
-
 	c.JSON(http.StatusOK, gin.H{
 		"code":   0,
 		"payOpt": data,
@@ -170,8 +169,29 @@ func OrderPayStatus(c *gin.Context) {
 	})
 }
 
+// PayNotify 订单支付回调
 func PayNotify(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "pong",
-	})
+	var data payjs.NotifyDataObj
+	if err := c.ShouldBindJSON(&data); err != nil {
+		c.String(http.StatusBadRequest, "failure")
+		return
+	}
+
+	if ok, err := payjs.CheckSign(data, utils.Config.Pay.Key); err != nil {
+		return
+	} else if ok {
+		// 更新订单状态
+		order := models.Order{
+			ID:     data.OutTradeNo,
+			Status: models.OrderStatusPayed,
+		}
+
+		if err := order.Save(); err != nil {
+			c.String(http.StatusBadRequest, "failure")
+		} else {
+			c.String(http.StatusOK, "success")
+		}
+	} else {
+		c.String(http.StatusBadRequest, "failure")
+	}
 }
