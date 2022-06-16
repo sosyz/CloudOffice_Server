@@ -35,13 +35,13 @@ func ReadConfig() error {
 	//设置读取的配置文件
 	v.SetConfigName("config")
 	//添加读取的配置文件路径
-	v.AddConfigPath(".")
+	v.AddConfigPath("./")
 	//设置配置文件类型
 	v.SetConfigType("yaml")
 
 	if err := v.ReadInConfig(); err != nil {
 		// 从文件读取配置失败 尝试从环境变量获取
-		fmt.Println("Read config from env failed, try to read from env")
+		fmt.Printf("Read config from env failed, err: %v, try to read from env\n", err)
 		//设置环境变量名前缀
 		return ReadConfigFromEnv(Config, "ONLINE_OFFICE")
 	} else {
