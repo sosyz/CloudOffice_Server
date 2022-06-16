@@ -27,13 +27,13 @@ func (c *Cache) Create() error {
 	return nil
 }
 
-// GetValue 查询缓存
-func (c *Cache) GetValue() error {
+// Find 查询缓存
+func (c *Cache) Find() error {
 	if err := DB.Where("`key` = ? AND expire_at > ?", c.Key, time.Now()).First(c).Error; err != nil {
 		return err
 	}
-	err := json.Unmarshal([]byte(c.V), c.Value)
-	if err != nil {
+
+	if err := json.Unmarshal([]byte(c.V), &c.Value); err != nil {
 		return err
 	}
 	return nil
@@ -41,7 +41,7 @@ func (c *Cache) GetValue() error {
 
 // Delete 删除缓存
 func (c *Cache) Delete() error {
-	if err := DB.Where("key = ?", c.Key).Delete(Cache{}).Error; err != nil {
+	if err := DB.Where("`key` LIKE ?", c.Key).Delete(Cache{}).Error; err != nil {
 		return err
 	}
 	return nil
