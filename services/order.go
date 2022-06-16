@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"sonui.cn/cloudprint/models"
 )
 
@@ -38,4 +39,15 @@ func GetOrderOverviewList(userId string) ([]OrderOverview, error) {
 		ret = append(ret, orderOverview)
 	}
 	return ret, nil
+}
+
+func OrderInfo(orderId int64) (models.Order, error) {
+	order := models.Order{
+		ID: orderId,
+	}
+
+	if err := order.Find(); err != nil {
+		return models.Order{}, fmt.Errorf("get order info error: %s", err.Error())
+	}
+	return order, nil
 }

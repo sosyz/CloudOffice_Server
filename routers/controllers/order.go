@@ -21,6 +21,7 @@ func OrderList(c *gin.Context) {
 			"code":    3,
 			"message": "openid is required",
 		})
+		return
 	}
 	if list, err := services.GetOrderOverviewList(userID.Value); err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -37,16 +38,34 @@ func OrderList(c *gin.Context) {
 }
 
 func OrderDetail(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "pong",
-	})
+	var orderID int64
+	// 字符串转为int64
+	orderID, err := strconv.ParseInt(c.PostForm("orderID"), 10, 64)
+	if err != nil || orderID == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    3,
+			"message": "orderID is required",
+		})
+	}
+	order, err := services.OrderInfo(orderID)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    5,
+			"message": "get order info error" + err.Error(),
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"order": order,
+		})
+	}
 }
 
 // OrderMerge 生成一个包含文件ID数组的订单
 func OrderMerge(c *gin.Context) {
 	req := c.PostForm("option")
 	if req == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"code":    3,
 			"message": "option is required",
 		})

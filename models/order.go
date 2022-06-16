@@ -2,34 +2,20 @@ package models
 
 import (
 	"encoding/json"
+	"sonui.cn/cloudprint/payjs"
 	"time"
 )
 
 type Order struct {
 	ID         int64   `gorm:"primary_key"`
 	FileList   []int64 `gorm:"-"`
-	Files      string  `gorm:"column:file_list"`
+	Files      string  `gorm:"column:file_list" json:"-"`
 	Status     int
 	UserID     string
 	TotalFee   int
 	CreatedAt  time.Time
-	PayAt      time.Time `gorm:"default:null"`
-	NotifyInfo NotifyInfo
-}
-
-// NotifyInfo 回调信息
-type NotifyInfo struct {
-	ReturnCode    int    //	Y	1：支付成功
-	TotalFee      int    //	Y	金额。单位：分
-	OutTradeNo    string //	Y	用户端自主生成的订单号
-	PayJsOrderId  string //	Y	PAYJS 订单号
-	TransactionId string //	Y	微信用户手机显示订单号
-	TimeEnd       string //	Y	支付成功时间
-	Openid        string //	Y	用户OPENID标示，本参数没有实际意义，旨在方便用户端区分不同用户
-	Attach        string //	N	用户自定义数据
-	MchId         string //	Y	商户号
-	PayType       string //	N	支付类型。微信订单不返回该字段；支付宝订单返回：alipay
-	Sign          string //	Y	数据签名 详见签名算法
+	PayAt      time.Time           `gorm:"default:null"`
+	NotifyInfo payjs.NotifyDataObj `json:"-"`
 }
 
 const (
