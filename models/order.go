@@ -50,7 +50,7 @@ const (
 func (o *Order) Save() error {
 	res, _ := json.Marshal(o.FileList)
 	o.Files = string(res)
-	return DB.Update(o).Error
+	return DB.Where("id = ?", o.ID).Save(o).Error
 }
 
 func (o *Order) Create() error {
@@ -64,5 +64,25 @@ func (o *Order) Delete() error {
 }
 
 func (o *Order) Find() error {
-	return DB.Where("id = ?", o.ID).First(o).Error
+	if err := DB.Where("id = ?", o.ID).First(o).Error; err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal([]byte(o.Files), &o.FileList); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// OrderList 根据用户ID查找订单列表
+func OrderList(userID string) ([]*Order, error) {
+	var orders []*Order
+	err := DB.Where("user_id = ?", userID).Find(&orders).Error
+	for _, v := range orders {
+		if err := json.Unmarshal([]byte(v.Files), &v.FileList); err != nil {
+			return nil, err
+		}
+	}
+	return orders, err
 }
