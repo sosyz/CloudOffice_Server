@@ -27,6 +27,7 @@ func TokenHandler() gin.HandlerFunc {
 			return
 		}
 		token.Openid = ck.Value
+
 		ck, err = c.Request.Cookie("session")
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusOK, gin.H{
@@ -52,7 +53,7 @@ func TokenHandler() gin.HandlerFunc {
 			Value: value,
 		}
 
-		err = cache.GetValue()
+		err = cache.Find()
 		// 空记录
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusOK, gin.H{
