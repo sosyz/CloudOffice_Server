@@ -188,8 +188,8 @@ func OrderPayStatus(c *gin.Context) {
 	})
 }
 
-// PayNotify 订单支付回调
-func PayNotify(c *gin.Context) {
+// OrderPayNotify 订单支付回调
+func OrderPayNotify(c *gin.Context) {
 	var data payjs.NotifyDataObj
 	if err := c.ShouldBindJSON(&data); err != nil {
 		c.String(http.StatusBadRequest, "failure")
@@ -213,4 +213,8 @@ func PayNotify(c *gin.Context) {
 	} else {
 		c.String(http.StatusBadRequest, "failure")
 	}
+}
+
+func OrderFileRepeatRead(c *gin.Context) {
+
 }

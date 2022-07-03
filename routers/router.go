@@ -15,9 +15,6 @@ func InitRouter() *gin.Engine {
 		context.String(200, "!pong")
 	})
 
-	// 支付回调地址
-	r.POST("/pay/notify", controllers.PayNotify)
-
 	// v1接口
 	v1 := r.Group("/api/v1")
 	// Session校验
@@ -28,24 +25,38 @@ func InitRouter() *gin.Engine {
 		user := v1.Group("/user")
 		{
 			// 登录
-			user.POST("login", controllers.Login)
+			login := user.Group("/login")
+			{
+				// 默认登录方式 使用openidId
+				login.GET("default", controllers.LoginDefault)
 
-			// 获取临时密钥
-			user.GET("tmpKey", controllers.CreatTmpKey)
+				// 扫码登录 获取QR码
+				login.GET("qr", controllers.LoginQR)
+
+				// 扫码登录 允许登录
+				login.GET("check", controllers.LoginCheck)
+
+				// 扫码登录 检查状态
+				login.GET("status", controllers.LoginStatus)
+			}
 
 			// 获取账号信息
-			user.GET("info", controllers.GetUserInfo)
+			user.GET("info", controllers.UserGetInfo)
 
-			user.POST("set", controllers.SetUserInfo)
+			// 设置账号信息
+			user.POST("set", controllers.UserSetInfo)
 		}
 
 		file := v1.Group("/file")
 		{
-			// 通知开始上传文件
-			file.POST("upload", controllers.UploadStart)
+			// 上传文件
+			file.POST("upload", controllers.FileUpload)
 
-			// 通知文件上传完毕
-			file.POST("complete", controllers.UploadComplete)
+			// 下载文件
+			file.GET("download", controllers.FileDownload)
+
+			file.HEAD("download", controllers.FileDownload)
+
 		}
 
 		order := v1.Group("/order")
@@ -62,20 +73,22 @@ func InitRouter() *gin.Engine {
 			// 取消订单
 			order.POST("cancel", controllers.OrderCancel)
 
-			// 获取订单支付信息
+			// 支付
+			pay := order.Group("/pay")
+			{
+				// 获取订单支付信息
+				pay.GET("info", controllers.OrderPayInfo)
+
+				// 获取订单支付状态
+				pay.GET("status", controllers.OrderPayStatus)
+
+				// 支付回调
+				pay.POST("notify", controllers.OrderPayNotify)
+			}
 			order.POST("payInfo", controllers.OrderPayInfo)
 
-			// 获取订单支付状态
-			order.POST("payStatus", controllers.OrderPayStatus)
-		}
-
-		ws := v1.Group("/wss")
-		{
-			// 打印机监听
-			ws.GET("printer", controllers.Printer)
-
-			// 用户监听
-			ws.GET("user", controllers.User)
+			// 授权商家再次读取订单文件
+			order.POST("repeatRead", controllers.OrderFileRepeatRead)
 		}
 	}
 	return r

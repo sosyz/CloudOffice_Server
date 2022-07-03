@@ -1,16 +1,14 @@
 package controllers
 
 import (
-	"crypto/md5"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"sonui.cn/cloudprint/services"
 	"sonui.cn/cloudprint/vo"
 )
 
-// GetUserInfo 账号信息
-func GetUserInfo(client *gin.Context) {
+// UserGetInfo 账号信息
+func UserGetInfo(client *gin.Context) {
 	ck, _ := client.Request.Cookie("openid")
 	code, err, res := services.GetUserInfo(ck.Value)
 	if err != "" {
@@ -35,38 +33,8 @@ func GetUserInfo(client *gin.Context) {
 
 }
 
-// CreatTmpKey 获取临时密钥
-func CreatTmpKey(client *gin.Context) {
-	// 前头验证过了这里忽略可能出现的错误
-	openid, _ := client.Request.Cookie("openid")
-
-	//openid取其md5
-	data := []byte(openid.Value)
-	has := md5.Sum(data)
-	//将[]byte转成16进制
-	openid.Value = fmt.Sprintf("%x", has)
-	code, err, res := services.CreatTmpKey(openid.Value)
-
-	if err != "" {
-		client.JSON(
-			http.StatusOK,
-			gin.H{
-				"code":    code,
-				"message": err,
-			})
-	} else {
-		client.JSON(
-			http.StatusOK,
-			gin.H{
-				"code": 0,
-				"data": res,
-			})
-	}
-
-}
-
-// Login 登录
-func Login(client *gin.Context) {
+// LoginDefault 登录
+func LoginDefault(client *gin.Context) {
 	var form vo.LoginVo
 
 	// 从POST参数中获得code
@@ -104,8 +72,20 @@ func Login(client *gin.Context) {
 	}
 }
 
-// SetUserInfo 设置用户信息
-func SetUserInfo(c *gin.Context) {
+func LoginQR(c *gin.Context) {
+
+}
+
+func LoginCheck(c *gin.Context) {
+
+}
+
+func LoginStatus(c *gin.Context) {
+
+}
+
+// UserSetInfo 设置用户信息
+func UserSetInfo(c *gin.Context) {
 	userInfo := vo.UserInfo{
 		Name:    c.PostForm("name"),
 		Phone:   c.PostForm("phone"),

@@ -84,3 +84,11 @@ func UploadStart(c *gin.Context) {
 		})
 	}
 }
+
+func FileUpload(c *gin.Context) {
+
+}
+
+func FileDownload(c *gin.Context) {
+
+}
