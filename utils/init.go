@@ -2,6 +2,9 @@ package utils
 
 import (
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/spf13/viper"
 	"os"
 	"reflect"
@@ -12,6 +15,7 @@ import (
 var Config *config
 var FileSF *Worker
 var OrderSF *Worker
+var S3 *session.Session
 
 func init() {
 	// 初始化配置文件
@@ -27,6 +31,27 @@ func init() {
 	FileSF, _ = NewWorker(node)
 	OrderSF, _ = NewWorker(node)
 
+	if Config.Run.Temp == "" {
+		Config.Run.Temp = "./temp"
+	}
+
+	if Config.Run.Temp[len(Config.Run.Temp)-1] != '/' {
+		Config.Run.Temp += "/"
+	}
+
+	creds := credentials.NewStaticCredentials(Config.QCloud.SecretId, Config.QCloud.SecretKey, "")
+	endpoint := "http://cos." + Config.QCloud.Region + ".myqcloud.com"
+	conf := &aws.Config{
+		Region:           aws.String(Config.QCloud.Region),
+		Endpoint:         &endpoint,
+		S3ForcePathStyle: aws.Bool(true),
+		Credentials:      creds,
+		// DisableSSL:       &disableSSL,
+	}
+	S3, err = session.NewSession(conf)
+	if err != nil {
+		fmt.Println("Init s3 session failed, err:", err)
+	}
 }
 
 func ReadConfig() error {

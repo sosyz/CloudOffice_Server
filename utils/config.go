@@ -1,7 +1,7 @@
 package utils
 
-// 腾讯云配置
-type qcloud struct {
+// S3配置信息
+type s3 struct {
 	Appid     string
 	Bucket    string
 	Region    string
@@ -33,13 +33,14 @@ type redis struct {
 	Password string
 }
 
-// 配置
+// 运行配置
 type run struct {
 	Host         string
 	CacheType    string
 	DatabaseType string
 	Node         string
 	Listen       string
+	Temp         string
 }
 
 // 支付配置
@@ -51,7 +52,7 @@ type pay struct {
 // 入口
 type config struct {
 	Run    run
-	QCloud qcloud
+	QCloud s3
 	Db     db
 	Redis  redis
 	Wechat wechat
