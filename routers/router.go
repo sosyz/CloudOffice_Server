@@ -85,7 +85,6 @@ func InitRouter() *gin.Engine {
 				// 支付回调
 				pay.POST("notify", controllers.OrderPayNotify)
 			}
-			order.POST("payInfo", controllers.OrderPayInfo)
 
 			// 授权商家再次读取订单文件
 			order.POST("repeatRead", controllers.OrderFileRepeatRead)
