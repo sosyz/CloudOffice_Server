@@ -16,6 +16,7 @@ type File struct {
 	Info       string    `gorm:"type:varchar(255);default:'{}'"`
 	CreateTime time.Time `gorm:"not null"`
 	UpdateTime time.Time `gorm:"not null"`
+	ETage      string    `gorm:"type:char(36)"`
 }
 
 // FileInfo 文件信息
