@@ -11,8 +11,8 @@ const (
 	numberBits  uint8 = 12
 	workerMax   int64 = -1 ^ (-1 << workerBits)
 	numberMax   int64 = -1 ^ (-1 << numberBits)
-	timeShift   uint8 = workerBits + numberBits
-	workerShift uint8 = numberBits
+	timeShift         = workerBits + numberBits
+	workerShift       = numberBits
 	startTime   int64 = 1525705533000 // 如果在程序跑了一段时间修改了epoch这个值 可能会导致生成相同的ID
 )
 
@@ -50,6 +50,6 @@ func (w *Worker) GetId() int64 {
 		w.number = 0
 		w.timestamp = now
 	}
-	ID := int64((now-startTime)<<timeShift | (w.workerId << workerShift) | (w.number))
+	ID := (now-startTime)<<timeShift | (w.workerId << workerShift) | (w.number)
 	return ID
 }
