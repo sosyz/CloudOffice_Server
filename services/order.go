@@ -1,9 +1,8 @@
 package services
 
 import (
-	"errors"
-	"fmt"
 	"sonui.cn/cloudprint/models"
+	"sonui.cn/cloudprint/utils/log"
 )
 
 type OrderOverview struct {
@@ -12,10 +11,10 @@ type OrderOverview struct {
 	Status       int      `json:"status"`
 }
 
-func GetOrderOverviewList(userId string) ([]OrderOverview, error) {
+func GetOrderOverviewList(userId string) ([]OrderOverview, *log.ErrorInfo) {
 	list, err := models.OrderList(userId)
 	if err != nil {
-		return nil, errors.New(err.Error())
+		return nil, log.NewError(5, err.Error())
 	}
 	// 对订单信息进行包装脱敏
 	var ret []OrderOverview
@@ -41,13 +40,13 @@ func GetOrderOverviewList(userId string) ([]OrderOverview, error) {
 	return ret, nil
 }
 
-func OrderInfo(orderId int64) (models.Order, error) {
+func OrderInfo(orderId int64) (*models.Order, *log.ErrorInfo) {
 	order := models.Order{
 		ID: orderId,
 	}
-
-	if err := order.Find(); err != nil {
-		return models.Order{}, fmt.Errorf("get order info error: %s", err.Error())
+	err := order.Find()
+	if err != nil {
+		return nil, log.NewError(5, err.Error())
 	}
-	return order, nil
+	return &order, nil
 }

@@ -40,8 +40,7 @@ func OrderList(c *gin.Context) {
 func OrderDetail(c *gin.Context) {
 	var orderID int64
 	// 字符串转为int64
-	orderID, err := strconv.ParseInt(c.PostForm("orderID"), 10, 64)
-	if err != nil || orderID == 0 {
+	if orderID, err := strconv.ParseInt(c.PostForm("orderID"), 10, 64); err != nil || orderID == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    3,
 			"message": "orderID is required",
@@ -50,8 +49,8 @@ func OrderDetail(c *gin.Context) {
 	order, err := services.OrderInfo(orderID)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
-			"code":    5,
-			"message": "get order info error" + err.Error(),
+			"code":    err.GetErrorCode(),
+			"message": "get order info error" + err.GetErrorMsg(),
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{

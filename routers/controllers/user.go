@@ -10,13 +10,13 @@ import (
 // UserGetInfo 账号信息
 func UserGetInfo(client *gin.Context) {
 	ck, _ := client.Request.Cookie("openid")
-	code, err, res := services.GetUserInfo(ck.Value)
-	if err != "" {
+	res, err := services.GetUserInfo(ck.Value)
+	if err != nil {
 		client.JSON(
 			http.StatusOK,
 			gin.H{
-				"code":    code,
-				"message": err,
+				"code":    err.GetErrorCode(),
+				"message": err.GetErrorMsg(),
 			})
 	} else {
 		body := vo.UserInfo{
@@ -30,15 +30,14 @@ func UserGetInfo(client *gin.Context) {
 			"data": body,
 		})
 	}
-
 }
 
 // LoginDefault 登录
 func LoginDefault(client *gin.Context) {
-	var form vo.LoginVo
+	var login vo.LoginVo
 
 	// 从POST参数中获得code
-	if err := client.Bind(&form); err != nil {
+	if err := client.Bind(&login); err != nil {
 		client.JSON(http.StatusBadRequest, gin.H{
 			"code":    4,
 			"message": "get code error",
@@ -46,7 +45,7 @@ func LoginDefault(client *gin.Context) {
 		return
 	}
 
-	if form.Code == "" {
+	if login.Code == "" {
 		client.JSON(http.StatusBadRequest, gin.H{
 			"code":    3,
 			"message": "code is empty",
@@ -55,13 +54,13 @@ func LoginDefault(client *gin.Context) {
 	}
 
 	// 获取session_key
-	code, err, token := services.Login(form.Code)
-	if err != "" {
+	token, err := services.Login(login.Code, login.From)
+	if err != nil {
 		client.JSON(
 			http.StatusOK,
 			gin.H{
-				"code":    code,
-				"message": err,
+				"code":    err.GetErrorCode(),
+				"message": err.GetErrorMsg(),
 			})
 	} else {
 		client.JSON(http.StatusOK, gin.H{
@@ -101,11 +100,11 @@ func UserSetInfo(c *gin.Context) {
 		return
 	}
 	ck, _ := c.Request.Cookie("openid")
-	code, err := services.SetUserInfo(ck.Value, userInfo.Name, userInfo.Phone, userInfo.Address)
+	err := services.SetUserInfo(ck.Value, userInfo.Name, userInfo.Phone, userInfo.Address)
 
 	c.JSON(
 		http.StatusOK, gin.H{
-			"code":    code,
-			"message": err,
+			"code":    err.GetErrorCode(),
+			"message": err.GetErrorMsg(),
 		})
 }
