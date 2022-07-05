@@ -40,6 +40,6 @@ func init() {
 		return "print_" + defaultTableName
 	}
 	// 更新结构
-	db.AutoMigrate(&User{}, &File{}, &Auth{}, &Cache{}, &Order{})
+	db.AutoMigrate(&User{}, &File{}, &Cache{}, &Order{})
 	DB = db
 }
