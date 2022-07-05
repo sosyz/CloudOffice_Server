@@ -6,9 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"sonui.cn/cloudprint/models"
-	"sonui.cn/cloudprint/payjs"
 	"sonui.cn/cloudprint/services"
 	"sonui.cn/cloudprint/utils"
+	payjs2 "sonui.cn/cloudprint/utils/payjs"
 	"strconv"
 	"time"
 )
@@ -172,7 +172,7 @@ func OrderPayInfo(c *gin.Context) {
 	}
 	fmt.Printf("order: %+v\n", order)
 
-	data := payjs.Create(order.TotalFee, order.ID)
+	data := payjs2.Create(order.TotalFee, order.ID)
 
 	// 商户号
 	c.JSON(http.StatusOK, gin.H{
@@ -189,13 +189,13 @@ func OrderPayStatus(c *gin.Context) {
 
 // OrderPayNotify 订单支付回调
 func OrderPayNotify(c *gin.Context) {
-	var data payjs.NotifyDataObj
+	var data payjs2.NotifyDataObj
 	if err := c.ShouldBindJSON(&data); err != nil {
 		c.String(http.StatusBadRequest, "failure")
 		return
 	}
 
-	if ok, err := payjs.CheckSign(data, utils.Config.Pay.Key); err != nil {
+	if ok, err := payjs2.CheckSign(data, utils.Config.Pay.Key); err != nil {
 		return
 	} else if ok {
 		// 更新订单状态

@@ -2,7 +2,7 @@ package models
 
 import (
 	"encoding/json"
-	"sonui.cn/cloudprint/payjs"
+	"sonui.cn/cloudprint/utils/payjs"
 	"time"
 )
 
