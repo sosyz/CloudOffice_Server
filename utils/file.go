@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"io"
 	"os"
 )
@@ -86,4 +87,27 @@ func Append(path string, content []byte) error {
 // Remove 删除文件
 func Remove(path string) error {
 	return os.Remove(path)
+}
+
+// CheckFileTypeBySuffix 检查文件类型
+// path 文件路径
+// st 文件类型
+// 仅仅检查后缀是不可行的，应当进一步检查文件头
+func CheckFileTypeBySuffix(name, st string) bool {
+	return name[len(name)-len(st):] == st
+}
+
+func CheckFileTypeByHeader(name string, header []byte) bool {
+	file, err := os.Open(name)
+	if err != nil {
+		return false
+	}
+	defer FileClose(file)
+
+	buf := make([]byte, len(header))
+	n, err := file.Read(buf)
+	if err != nil {
+		return false
+	}
+	return bytes.Equal(buf[:n], header)
 }
