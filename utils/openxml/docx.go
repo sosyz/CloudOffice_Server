@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-type DocPropsAppXML struct {
+type DocxPropsAppXML struct {
 	Template             string  `xml:"Template"`
 	TotalTime            int     `xml:"TotalTime"`
 	Pages                int     `xml:"Pages"`
@@ -46,14 +46,14 @@ func GetDocxPages(filePath string) (int, error) {
 				return 0, err
 			}
 			// 解析文件内容
-			docPropsAppXML := DocPropsAppXML{}
-			if err = xml.Unmarshal(body, &docPropsAppXML); err != nil {
+			docxPropsAppXML := DocxPropsAppXML{}
+			if err = xml.Unmarshal(body, &docxPropsAppXML); err != nil {
 				return 0, err
 			}
 			if err := rc.Close(); err != nil {
 				return 0, err
 			}
-			return docPropsAppXML.Pages, nil
+			return docxPropsAppXML.Pages, nil
 		}
 	}
 	return 0, errors.New("docProps/app.xml not found")
