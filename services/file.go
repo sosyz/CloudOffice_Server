@@ -8,6 +8,7 @@ import (
 	"sonui.cn/cloudprint/utils"
 	"sonui.cn/cloudprint/utils/log"
 	"sonui.cn/cloudprint/utils/openxml"
+	"strings"
 	"time"
 )
 
@@ -46,7 +47,18 @@ func SaveFile(user, name, localPath, info string, size uint64) (*models.File, *l
 		// 判断是否为docx文件
 		if utils.CheckFileTypeBySuffix(name, "docx") && utils.CheckFileTypeByHeader(localPath, []byte("PK")) {
 			// 为docx文件，本地解析
-			fInfo.PageNum, err = openxml.GetDocxPages(localPath)
+			docx, err := openxml.GetDocxInfo(localPath)
+			if err != nil {
+				return nil, log.NewError(103, err.Error())
+			}
+
+			if strings.Contains(strings.ToUpper(docx.Application), "WPS") {
+				// Because the file created by WPS do not follow the specification
+				// so, fuck you wps
+				fInfo.PageNum, err = utils.GetFilePagesNum(localPath)
+			} else {
+				fInfo.PageNum = docx.Pages
+			}
 		} else {
 			fInfo.PageNum, err = utils.GetFilePagesNum(localPath)
 		}
