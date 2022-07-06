@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"net/url"
 	"reflect"
 	"sort"
 	"strings"
@@ -12,23 +11,20 @@ import (
 
 // Sign PayJs签名算法
 func Sign(order map[string]string, key string) (sign string) {
-	data := url.Values{}
-	for k, v := range order {
-		data.Add(k, v)
-	}
 	keys := make([]string, 0, 0)
-	for key := range data {
-		if data.Get(key) != "" {
-			keys = append(keys, key)
+	for key := range order {
+		if order[key] != "" && strings.ToLower(key) != "sign" {
+			keys = append(keys, key+"="+strings.TrimSpace(order[key]))
 		}
 	}
 	sort.Strings(keys)
-	body := data.Encode()
-	d, _ := url.QueryUnescape(body)
+	d := strings.Join(keys, "&")
 	d += "&key=" + key
-	h := md5.New()
-	h.Write([]byte(d))
-	return strings.ToUpper(hex.EncodeToString(h.Sum(nil)))
+
+	md5bs := md5.Sum([]byte(d))
+	md5res := hex.EncodeToString(md5bs[:])
+	ret := strings.ToUpper(md5res)
+	return ret
 }
 
 // CheckSign 签名验证
@@ -64,6 +60,7 @@ func CheckSign(obj interface{}, key string) (bool, error) {
 			signStr = objValue.Elem().Field(i).String()
 		}
 	}
+	fmt.Printf("CheckSign[data]: %+v\n", data)
 	if signStr == "" {
 		return false, fmt.Errorf("sign is empty")
 	} else {
