@@ -11,7 +11,7 @@ type Order struct {
 	FileList   []int64 `gorm:"-"`
 	Files      string  `gorm:"column:file_list" json:"-"`
 	Status     int
-	UserID     string
+	UserID     int64
 	TotalFee   int
 	CreatedAt  time.Time
 	PayAt      time.Time           `gorm:"default:null"`
