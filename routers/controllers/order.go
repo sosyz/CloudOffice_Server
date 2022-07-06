@@ -8,9 +8,9 @@ import (
 	"sonui.cn/cloudprint/models"
 	"sonui.cn/cloudprint/services"
 	"sonui.cn/cloudprint/utils"
+	"sonui.cn/cloudprint/utils/log"
 	payjs2 "sonui.cn/cloudprint/utils/payjs"
 	"strconv"
-	"time"
 )
 
 func OrderList(c *gin.Context) {
@@ -62,6 +62,8 @@ func OrderDetail(c *gin.Context) {
 
 // OrderMerge 生成一个包含文件ID数组的订单
 func OrderMerge(c *gin.Context) {
+	user, _ := models.GetUserFromRequest(c)
+
 	req := c.PostForm("option")
 	if req == "" {
 		c.JSON(http.StatusOK, gin.H{
@@ -70,73 +72,26 @@ func OrderMerge(c *gin.Context) {
 		})
 		return
 	}
-
 	// 解析文件列表
-	var fids []string
-	err := json.Unmarshal([]byte(req), &fids)
-	if err != nil || len(fids) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
+	var fids []int64
+	if err := json.Unmarshal([]byte(req), &fids); err != nil || len(fids) == 0 {
+		c.JSON(http.StatusOK, gin.H{
 			"code":    5,
 			"message": "option is error",
 		})
 		return
 	}
-	fmt.Printf("fids: %v\n", fids)
-	ans := 0
-
-	// 检查文件是否存在 存在计算页数和
-	for _, fid := range fids {
-		tFid, _ := strconv.ParseInt(fid, 10, 64)
-		tFile := models.File{Fid: tFid}
-		if ok, err := tFile.Exist(); !ok || err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"code":    5,
-				"message": fmt.Sprintf("fid[%v] is not exist", fid),
-			})
-			return // 只要有一个文件不存在，就返回
-		} else {
-			// TODO: 检查文件是否已使用
-			var info models.FileInfo
-			err = json.Unmarshal([]byte(tFile.Info), &info)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"code":    5,
-					"message": fmt.Sprintf("fileID[%v] info is error", fid),
-				})
-				return
-			}
-			fmt.Printf("fid: %v, PageNum: %+v, info:%v\n", tFile.Fid, info.PageNum, tFile.Info)
-			ans += info.PageNum
-		}
-	}
-
-	// 生成订单
-	var fl []int64
-	for _, fid := range fids {
-		tfl, _ := strconv.ParseInt(fid, 10, 64)
-		fl = append(fl, tfl)
-	}
-	order := models.Order{
-		ID:        utils.OrderSF.GetId(),
-		FileList:  fl,
-		Status:    models.OrderStatusWaitPay,
-		UserID:    c.PostForm("openid"),
-		TotalFee:  ans * 30,
-		CreatedAt: time.Now(),
-	}
-
-	// 写入数据库
-	err = order.Create()
 	// 返回结果
+	order, err := services.OrderCreate(user.Id, fids)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"code":    201,
 			"message": "create order error",
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    0,
-			"orderID": strconv.FormatInt(order.ID, 10),
+			"orderID": strconv.FormatInt(order.ID, 10), // 防止前端处理精度丢失
 		})
 	}
 }
@@ -189,18 +144,19 @@ func OrderPayStatus(c *gin.Context) {
 
 // OrderPayNotify 订单支付回调
 func OrderPayNotify(c *gin.Context) {
-	var data payjs2.NotifyDataObj
-	if err := c.ShouldBindJSON(&data); err != nil {
+	// 输出请求包体
+	body := map[string]string{}
+	// 解析www-form请求表单
+	if err := c.Bind(&body); err != nil {
+		log.Debug("OrderPayNotify", fmt.Sprint(err))
 		c.String(http.StatusBadRequest, "failure")
-		return
 	}
 
-	if ok, err := payjs2.CheckSign(data, utils.Config.Pay.Key); err != nil {
-		return
-	} else if ok {
+	if payjs2.Sign(body, utils.Config.Pay.Key) == body["sign"] {
+		log.Debug("OrderPayNotify", "verify sign success")
 		// 更新订单状态
 		order := models.Order{
-			ID:     data.OutTradeNo,
+			ID:     0,
 			Status: models.OrderStatusPayed,
 		}
 
@@ -210,10 +166,14 @@ func OrderPayNotify(c *gin.Context) {
 			c.String(http.StatusOK, "success")
 		}
 	} else {
+		log.Debug("OrderPayNotify", fmt.Sprintf("%v", body))
 		c.String(http.StatusBadRequest, "failure")
+		return
 	}
 }
 
 func OrderFileRepeatRead(c *gin.Context) {
-
+	c.JSON(200, gin.H{
+		"message": "pong",
+	})
 }

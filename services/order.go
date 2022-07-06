@@ -1,8 +1,12 @@
 package services
 
 import (
+	"encoding/json"
+	"fmt"
 	"sonui.cn/cloudprint/models"
+	"sonui.cn/cloudprint/utils"
 	"sonui.cn/cloudprint/utils/log"
+	"time"
 )
 
 type OrderOverview struct {
@@ -48,5 +52,42 @@ func OrderInfo(orderId int64) (*models.Order, *log.ErrorInfo) {
 	if err != nil {
 		return nil, log.NewError(5, err.Error())
 	}
+	return &order, nil
+}
+
+func OrderCreate(userId int64, fileIdList []int64) (*models.Order, *log.ErrorInfo) {
+	ans := 0
+
+	// 检查文件是否存在 存在计算页数和
+	for _, fid := range fileIdList {
+		tFile := models.File{Fid: fid}
+		if ok, err := tFile.Exist(); !ok || err != nil {
+			return nil, log.NewError(203, fmt.Sprintf("fid[%v] is not exist", fid)) // 只要有一个文件不存在，就返回
+		} else {
+			var info models.FileInfo
+			err = json.Unmarshal([]byte(tFile.Info), &info)
+			if err != nil {
+				return nil, log.NewError(203, fmt.Sprintf("fid[%v] is not exist", fid)) // 只要有一个文件信息错误
+			}
+			log.Debug("info", fmt.Sprintf("fid: %v, PageNum: %+v, info:%v\n", tFile.Fid, info.PageNum, tFile.Info))
+			ans += info.PageNum
+		}
+	}
+
+	// 生成订单
+	order := models.Order{
+		ID:        utils.OrderSF.GetId(),
+		FileList:  fileIdList,
+		Status:    models.OrderStatusWaitPay,
+		UserID:    userId,
+		TotalFee:  ans * 30,
+		CreatedAt: time.Now(),
+	}
+
+	// 写入数据库
+	if err := order.Create(); err != nil {
+		return nil, log.NewError(201, err.Error())
+	}
+
 	return &order, nil
 }
