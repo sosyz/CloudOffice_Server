@@ -26,12 +26,12 @@ type DocxPropsAppXML struct {
 	AppVersion           float32 `xml:"AppVersion"`
 }
 
-// GetDocxPages 获取文件页数
-func GetDocxPages(filePath string) (int, error) {
+// GetDocxInfo 获取docx文件信息
+func GetDocxInfo(filePath string) (*DocxPropsAppXML, error) {
 	// 打开压缩文件
 	zipFile, err := zip.OpenReader(filePath)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	// 解压文件
 	for _, f := range zipFile.File {
@@ -39,22 +39,22 @@ func GetDocxPages(filePath string) (int, error) {
 			// 读取文件内容
 			rc, err := f.Open()
 			if err != nil {
-				return 0, err
+				return nil, err
 			}
 			body, err := io.ReadAll(rc)
 			if err != nil {
-				return 0, err
+				return nil, err
 			}
 			// 解析文件内容
 			docxPropsAppXML := DocxPropsAppXML{}
 			if err = xml.Unmarshal(body, &docxPropsAppXML); err != nil {
-				return 0, err
+				return nil, err
 			}
 			if err := rc.Close(); err != nil {
-				return 0, err
+				return nil, err
 			}
-			return docxPropsAppXML.Pages, nil
+			return &docxPropsAppXML, nil
 		}
 	}
-	return 0, errors.New("docProps/app.xml not found")
+	return nil, errors.New("docProps/app.xml not found")
 }

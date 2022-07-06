@@ -3,7 +3,7 @@ package openxml
 import "testing"
 
 func TestGetDocxPages(t *testing.T) {
-	pages, err := GetDocxPages("D:\\test.docx")
+	pages, err := GetDocxInfo("D:\\test.docx")
 	if err != nil {
 		t.Error(err)
 	}
