@@ -10,6 +10,7 @@ var whiteList = []string{
 	"/api/v1/user/login",
 	"/api/v1/user/register",
 	"/api/v1/order/pay/notify",
+	"/api/v1/ws",
 }
 
 func TokenHandler() gin.HandlerFunc {

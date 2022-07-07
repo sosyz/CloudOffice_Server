@@ -6,6 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.47
 	github.com/gin-gonic/gin v1.7.7
 	github.com/google/uuid v1.1.2
+	github.com/gorilla/websocket v1.5.0
 	github.com/jinzhu/gorm v1.9.16
 	github.com/spf13/viper v1.11.0
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.34

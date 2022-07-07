@@ -3,6 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"sonui.cn/cloudprint/routers/controllers"
+	"sonui.cn/cloudprint/routers/websocket"
 )
 
 // InitRouter 初始化路由
@@ -18,9 +19,12 @@ func InitRouter() *gin.Engine {
 	// v1接口
 	v1 := r.Group("/api/v1")
 	// Session校验
-	v1.Use(controllers.TokenHandler())
+	v1.Use(controllers.TokenHandler(), gin.Recovery())
 	// 路由
 	{
+		// ws
+		v1.GET("/ws", websocket.Handle)
+
 		// 用户模块
 		user := v1.Group("/user")
 		{
