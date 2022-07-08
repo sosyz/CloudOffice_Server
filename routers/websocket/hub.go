@@ -1,43 +1,43 @@
 package websocket
 
-import "encoding/json"
-
-var h = hub{
-	c: make(map[*connection]bool),
-	u: make(chan *connection),
-	b: make(chan []byte),
-	r: make(chan *connection),
+var hub = &Hub{
+	broadcast:  make(chan []byte),
+	register:   make(chan *Client),
+	unregister: make(chan *Client),
+	clients:    make(map[*Client]bool),
 }
 
-type hub struct {
-	c map[*connection]bool
-	b chan []byte
-	r chan *connection
-	u chan *connection
+type Hub struct {
+	// Registered clients.
+	clients map[*Client]bool
+
+	// Inbound messages from the clients.
+	broadcast chan []byte
+
+	// Register requests from the clients.
+	register chan *Client
+
+	// Unregister requests from clients.
+	unregister chan *Client
 }
 
-func (h *hub) run() {
+func (h *Hub) run() {
 	for {
 		select {
-		case c := <-h.r:
-			h.c[c] = true
-			c.data.Ip = c.ws.RemoteAddr().String()
-			c.data.Type = "handshake"
-			c.data.UserList = userList
-			dataB, _ := json.Marshal(c.data)
-			c.sc <- dataB
-		case c := <-h.u:
-			if _, ok := h.c[c]; ok {
-				delete(h.c, c)
-				close(c.sc)
+		case client := <-h.register:
+			h.clients[client] = true
+		case client := <-h.unregister:
+			if _, ok := h.clients[client]; ok {
+				delete(h.clients, client)
+				close(client.send)
 			}
-		case data := <-h.b:
-			for c := range h.c {
+		case message := <-h.broadcast:
+			for client := range h.clients {
 				select {
-				case c.sc <- data:
+				case client.send <- message:
 				default:
-					delete(h.c, c)
-					close(c.sc)
+					close(client.send)
+					delete(h.clients, client)
 				}
 			}
 		}
