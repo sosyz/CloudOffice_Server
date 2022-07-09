@@ -1,5 +1,5 @@
 package websocket
 
 func init() {
-	go h.run()
+	go hub.run()
 }
