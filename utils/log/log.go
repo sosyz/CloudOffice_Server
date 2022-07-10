@@ -1,5 +1,10 @@
 package log
 
+import (
+	"fmt"
+	"time"
+)
+
 type ErrorInfo struct {
 	code int
 	msg  string
@@ -16,4 +21,8 @@ func (e *ErrorInfo) GetErrorCode() int {
 
 func (e *ErrorInfo) GetErrorMsg() string {
 	return e.msg
+}
+
+func Debug(tag, msg string) {
+	fmt.Printf("%v [%s] %s\n", time.Now(), tag, msg)
 }

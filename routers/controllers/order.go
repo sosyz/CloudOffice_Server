@@ -146,7 +146,7 @@ func OrderPayStatus(c *gin.Context) {
 func OrderPayNotify(c *gin.Context) {
 	// 输出请求包体
 	body := map[string]string{}
-	// 解析www-form请求表单
+	// 解析请求表单
 	if err := c.Bind(&body); err != nil {
 		log.Debug("OrderPayNotify", fmt.Sprint(err))
 		c.String(http.StatusBadRequest, "failure")
