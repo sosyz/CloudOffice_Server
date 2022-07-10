@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
+	"net/http"
 	"time"
 )
 
@@ -34,7 +35,7 @@ var (
 	space   = []byte{' '}
 )
 
-var handler = map[string]func(c *Client){
+var handler = map[string]func(message *string, tag string){
 	"login":        Login,
 	"quiet":        Quiet,
 	"fileInfo":     FileInfo,
@@ -45,6 +46,8 @@ var handler = map[string]func(c *Client){
 type Client struct {
 	hub *Hub
 
+	tag string
+
 	conn *websocket.Conn
 
 	send chan []byte
@@ -53,6 +56,9 @@ type Client struct {
 var upgrade = &websocket.Upgrader{
 	ReadBufferSize:  512,
 	WriteBufferSize: 512,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 func Handle(c *gin.Context) {
@@ -94,7 +100,7 @@ func (c *Client) readPump() {
 			continue
 		}
 		if handler[data.Type] != nil {
-			go handler[data.Type](c)
+			go handler[data.Type](&data.Data, c.tag)
 		}
 	}
 }
