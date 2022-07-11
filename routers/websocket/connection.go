@@ -35,22 +35,12 @@ var (
 	space   = []byte{' '}
 )
 
-var handler = map[string]func(message *string, tag string){
+var handler = map[string]func(message *string, client *Client){
 	"login":        Login,
-	"quiet":        Quiet,
+	"quiet":        Quit,
 	"fileInfo":     FileInfo,
 	"printMessage": PrintMessage,
 	"status":       Status,
-}
-
-type Client struct {
-	hub *Hub
-
-	tag string
-
-	conn *websocket.Conn
-
-	send chan []byte
 }
 
 var upgrade = &websocket.Upgrader{
@@ -69,6 +59,7 @@ func Handle(c *gin.Context) {
 		log.Println(err)
 		return
 	}
+
 	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
@@ -100,7 +91,7 @@ func (c *Client) readPump() {
 			continue
 		}
 		if handler[data.Type] != nil {
-			go handler[data.Type](&data.Data, c.tag)
+			go handler[data.Type](&data.Data, c)
 		}
 	}
 }
