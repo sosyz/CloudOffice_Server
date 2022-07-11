@@ -37,10 +37,11 @@ var (
 
 var handler = map[string]func(message *string, client *Client){
 	"login":        Login,
-	"quiet":        Quit,
+	"quit":         Quit,
 	"fileInfo":     FileInfo,
 	"printMessage": PrintMessage,
 	"status":       Status,
+	"newTask":      NewTask,
 }
 
 var upgrade = &websocket.Upgrader{
