@@ -41,6 +41,7 @@ type run struct {
 	Node         string
 	Listen       string
 	Temp         string
+	Mode         string
 }
 
 // 支付配置
