@@ -3,6 +3,7 @@ package websocket
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
@@ -63,7 +64,7 @@ func Handle(c *gin.Context) {
 
 	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
 	client.hub.register <- client
-
+	client.send <- []byte("Please login first")
 	go client.writePump()
 	go client.readPump()
 }
@@ -85,6 +86,7 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+		fmt.Printf("%s\n", message)
 		data := body{}
 		err = json.Unmarshal(message, &data)
 		if err != nil {

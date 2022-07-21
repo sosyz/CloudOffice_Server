@@ -17,37 +17,37 @@ func NewTask(message *string, client *Client) {
 		log.Println(err)
 		return
 	}
-	var c string
+	var c *string
 	// 优化方案:
 	// 添加空闲队列 进行维护 从空闲队列中取出打印机进行打印
 
 	i := 0
-	for c == "" && i < 30 {
+	for *c == "" && i < 30 {
 		if newTask.Task == 3 {
 			c = hub.colorQueue.Pop()
 		} else {
 			c = hub.blackQueue.Pop()
-			if c == "" {
+			if *c == "" {
 				c = hub.colorQueue.Pop()
-				if c != "" {
+				if *c != "" {
 					hub.colorQueue.Push(c) // 放到队尾
 				}
 			} else {
 				hub.blackQueue.Push(c) // 放到队尾
 			}
 		}
-		if c != "" {
+		if *c != "" {
 			break
 		}
 		time.Sleep(time.Second * 1)
 		i++
 	}
 
-	if c == "" {
+	if *c == "" {
 		// TODO: 设置状态为打印失败
 	} else {
 		// 发送给打印机
-		hub.printer[c].send <- []byte(*message)
+		hub.printer[*c].send <- []byte(*message)
 	}
 }
 
@@ -59,7 +59,7 @@ func Login(message *string, client *Client) {
 		log.Println(err)
 		return
 	}
-
+	log.Printf("%+v\n", login)
 	for k, v := range login {
 		tag := login[k].Tag
 		// 打印机列表
@@ -71,10 +71,10 @@ func Login(message *string, client *Client) {
 
 		if v.Type == 1 {
 			// 黑白打印机
-			hub.blackQueue.Push(tag)
+			hub.blackQueue.Push(&tag)
 		} else if v.Type == 2 {
 			// 彩色打印机
-			hub.colorQueue.Push(tag)
+			hub.colorQueue.Push(&tag)
 		}
 	}
 }
@@ -111,7 +111,7 @@ func FileInfo(message *string, client *Client) {
 	}
 }
 
-// PrintMessage 打印状态上报
+// PrintMessage 打印状态上报d
 func PrintMessage(message *string, client *Client) {
 	var printMessage struct {
 		Fid     string `json:"fid"`
@@ -127,6 +127,7 @@ func PrintMessage(message *string, client *Client) {
 
 // Status 打印机状态上报
 func Status(message *string, client *Client) {
+	log.Println("Status:", *message)
 	var status struct {
 		// 状态
 		Status int `json:"status"`

@@ -11,8 +11,8 @@ var hub = &Hub{
 	unregister: make(chan *Client),
 	clients:    make(map[*Client]bool),
 	printer:    make(map[string]*Client),
-	blackQueue: utils.Queue[string]{},
-	colorQueue: utils.Queue[string]{},
+	blackQueue: utils.Queue[*string]{},
+	colorQueue: utils.Queue[*string]{},
 	tags:       make(map[*Client][]string),
 }
 
@@ -44,10 +44,10 @@ type Hub struct {
 	printer map[string]*Client
 
 	// 黑白打印机队列
-	blackQueue utils.Queue[string]
+	blackQueue utils.Queue[*string]
 
 	// 彩色打印机队列
-	colorQueue utils.Queue[string]
+	colorQueue utils.Queue[*string]
 
 	// 广播器
 	broadcast chan []byte

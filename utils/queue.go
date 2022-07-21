@@ -1,18 +1,18 @@
 package utils
 
 type Queue[T any] struct {
-	Header *QueueNode
-	Tail   *QueueNode
+	Header *QueueNode[T]
+	Tail   *QueueNode[T]
 	size   int
 }
 
-type QueueNode struct {
-	item any
-	next *QueueNode
+type QueueNode[T any] struct {
+	item T
+	next *QueueNode[T]
 }
 
 func (q *Queue[T]) Push(item T) {
-	node := &QueueNode{item, nil}
+	node := &QueueNode[T]{item, nil}
 	if q.size == 0 {
 		q.Header = node
 		q.Tail = node
@@ -25,7 +25,8 @@ func (q *Queue[T]) Push(item T) {
 
 func (q *Queue[T]) Pop() T {
 	if q.size == 0 {
-		return nil
+		var zero T
+		return zero
 	}
 	item := q.Header.item
 	q.Header = q.Header.next

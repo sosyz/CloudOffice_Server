@@ -6,3 +6,13 @@ config.yaml
 
 # 编译及serverless部署目录
 /build/
+
+test/
+
+.gitignore
+
+main
+
+scf_bootstrap
+
+go.sum

@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"sonui.cn/cloudprint/routers/controllers"
 	"sonui.cn/cloudprint/routers/websocket"
-	"sonui.cn/cloudprint/utils"
 )
 
 // InitRouter 初始化路由
@@ -20,11 +19,11 @@ func InitRouter() *gin.Engine {
 	// v1接口
 	v1 := r.Group("/api/v1")
 
-	if utils.Config.Run.Mode == "PrinterManager" {
-		// ws
-		v1.GET("/ws", websocket.Handle)
-		return r
-	}
+	//if utils.Config.Run.Mode == "PrinterManager" {
+	// ws
+	v1.GET("/ws", websocket.Handle)
+	//return r
+	//}
 
 	// Session校验
 	v1.Use(controllers.TokenHandler(), gin.Recovery())

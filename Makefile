@@ -1,5 +1,6 @@
 all:
-	go build -o main
+	go build -buildvcs=false -o main
+	./main
 put:
 	export CGO_ENABLED=0
 	go build -o build/CloudPrinter/main -a -ldflags '-extldflags "-static"' .
